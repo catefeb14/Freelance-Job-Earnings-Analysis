@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CGT370 Final Project</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: 500;
+            color: #373A55;
+            background: #F6F9F9;
+            width: 80%;
+            margin: 0 auto;
+            align-items: center;
+            justify-content: center;
+            display: block;
+            gap: 30px;
+            padding: 20px;
+        }
+
+        h1, h2, h3 {
+            width: 100%;
+            text-align: center;
+        }
+
+        p {
+            justify-content: center;
+            font-weight: 700;
+            padding: 20px;
+            color: #edf2f4; /* white-blue */
+            background-color: #2b2d42; /* dark blue */
+            border: 2.5px solid #ef233c; /* red*/
+            border-radius: 15px;
+            width: 70%;
+            margin: 10px auto;
+            font-size: 18px;
+        }
+		#map {
+  width: 100%;
+  height: auto;
+  max-width: 900px;
+  display: block;
+  margin: 0 auto;
+}
+
+
+
+        #refresher {
+            width: 85%;
+            margin: 0 auto 80px auto;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 8px;
+            pointer-events: none;
+            font-size: 13px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        #bar-chart-tooltip {
+            pointer-events: none; /* allow mouse to pass through */
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+        }
+	
+        svg {
+            display: block;
+            margin: 0 auto;
+        }
+
+        #job-category-chart {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Responsive handling */
+        @media (max-width: 768px) {
+            h1, h2, h3 {
+                font-size: 1.5em;
+            }
+
+            p {
+                font-size: 16px;
+            }
+        }
+        a {
+            margin: 5px 10px 5px 10px;
+            color: #edf2f4;
+            background-color: #2b2d42;
+            border: 2.5px solid #ef233c;
+            border-radius: 15px;
+            padding: 5px 10px 5px 10px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <h1 style="font-size:2.7em; padding-bottom:40px; text-decoration: underline solid #ef233c; padding-top:20px;">An Analysis of Freelancer Earnings and Job Trends Around the World</h1>
+        <div id="refresher">
+            <p>The primary goal of our dataset is to where freelancers are being hired, how much they make, and what platforms they are using to find work </p>
+        </div>
+        <div id="visualization-1">
+            <h2>Freelancer Earnings by Client Region</h2>
+            <svg id="map"></svg>
+            <div class="tooltip" style="opacity: 0;"></div>
+            <div id="bar-chart-tooltip" style="position: absolute; opacity: 0; background: white; border: 1px solid #ccc; padding: 10px; border-radius: 8px;"></div>
+            <p>
+                <strong>What we wanted to learn:</strong> Where are freelance jobs most lucrative? How does experience level correlate with average earnings in these regions? <br />
+                <br />
+                While all regions have similar earnings - within $200 million - <strong>Australia</strong> is the <strong>leading region in earnings.</strong> However, the <strong>United States</strong> has the <strong>highest average rating.</strong> The range of jobs available is between approximately 39,000 - 48,000 per region; <strong>Australia</strong> boasts the highest end of web development jobs, at <strong>47,572.</strong>
+            </p>
+            <p>The experience level breakdown by region reveals some interesting data. Across the board, there is <strong>no correlation between experience level and earnings.</strong> To explore this further, we wanted to break down how people are making money in these freelance positions, and whether there is a correlation to be found.</p>
+        </div>
+        <!--end visualization-1 div-->
+         
+        <div id="visualization-2">
+            <!--start vis 2-->
+            <h2>Most Popular Job Category on Each Platform</h2>
+            <div id="job-category-dropdown-container"></div>
+            <div id="job-category-chart"></div>
+            <p>Next, we wanted to understand what type of jobs people are performing, what platforms they are finding these jobs through, and whether they are receiving fixed or hourly rates. What we've noticed through comparing these variables are some job types tend to utilize hourly rates more than others. For instance, <strong>web development positions are typically paid hourly</strong>, while <strong>SEO positions are typically paid at a fixed rate.</strong> Still, there is a lot of variation between fixed vs. hourly rates across the board. </p>
+            <p>This data can be very useful for indicating to freelancers what platforms are most helpful in finding niche job types, and what type of payment methods buyers are more receptive to. One instance of this is the clear preference for buyers to hire content writers at an hourly rate over a fixed rate on Upwork. Similarly, it appears web developers have the most success finding work on the Fiverr platform than any other. </p>
+
+        </div>
+        <!--end visualization-2 div-->
+
+        <div id="visualization-3">
+            <h2>Experience Level Breakdown</h2>
+            <h3>Box Plot: Earnings per Platform and Experience Level</h3>
+            <svg id="box-plot"></svg>
+            <p>We continue our hunt to learn about earnings and job trends in freelance web development by exploring the median salary across platforms. Again, there is quite a bit of <strong>variation in both earnings and freelance platforms.</strong> We wanted to review the average earnings as well with these variables to better understand the dataset.</p>
+        </div>
+        <!--end visualization-3 div-->
+
+        <div id="visualization-4">
+            <h2>Payment Method per Platform</h2>
+            <div class="flex-container">
+                <svg id="heatmap"></svg>
+            </div>
+            <div class="tooltip" id="tooltip"></div>
+            <p>The heatmap displaying average earnings per platform based on experience level reveals the answer we’ve been seeking: there is a <strong>correlation between average job earnings and experience level.</strong> As developers reach an intermediate level, average earnings per job increase across all platforms. Then, they drop for more experienced levels. We would like to learn more information on this data trend in the future; we can only hypothesize that there are either less experienced developers taking freelance jobs or perhaps it takes less time for them to complete freelance jobs.</p>
+        </div>
+        <!--end visualization-4 div-->
+    </div>
+    <!-- end content -->
+
+
+    <script>
+    // Choropleth Map
+       const width = 900;
+		const height = 600;
+		const mapSvg = d3.select("#map")
+		.attr("viewBox", `0 0 ${width} ${height}`) // responsive sizing
+		.attr("preserveAspectRatio", "xMidYMid meet");
+		
+        const tooltip = d3.select(".tooltip");
+        const barTooltip = d3.select("#bar-chart-tooltip");
+       
+
+        const projection = d3.geoMercator().scale(150).translate([width / 2, height / 1.5]);
+        const path = d3.geoPath().projection(projection);
+
+        const data = [
+            { region: "Australia", earnings: 1479897, jobs: 47572, rating: 3.97, lat: -25, lon: 133, beginner: 18633, intermediate: 13955, expert: 14984 },
+            { region: "Middle East", earnings: 1417408, jobs: 43715, rating: 4.05, lat: 26, lon: 50, beginner: 16759, intermediate: 13579, expert: 13377 },
+            { region: "Asia", earnings: 1453412, jobs: 41356, rating: 3.96, lat: 30, lon: 100, beginner: 14360, intermediate: 12752, expert: 14244 },
+            { region: "USA", earnings: 1422901, jobs: 41173, rating: 4.06, lat: 37, lon: -95, beginner: 13856, intermediate: 14481, expert: 12836 },
+            { region: "Canada", earnings: 1316133, jobs: 39254, rating: 4.00, lat: 56, lon: -106, beginner: 13803, intermediate: 12452, expert: 12999 },
+            { region: "Europe", earnings: 1281319, jobs: 40420, rating: 3.98, lat: 50, lon: 10, beginner: 13676, intermediate: 13284, expert: 13460 },
+            { region: "UK", earnings: 1413185, jobs: 40695, rating: 3.96, lat: 55, lon: -3, beginner: 13388, intermediate: 14209, expert: 13098 }
+        ];
+
+        const radius = d3.scaleSqrt()
+            .domain([d3.min(data, d => d.earnings), d3.max(data, d => d.earnings)])
+            .range([5, 35]);
+
+        d3.json("https://unpkg.com/world-atlas@2/countries-110m.json").then(worldData => {
+            const countries = topojson.feature(worldData, worldData.objects.countries).features;
+
+            mapSvg.append("g")
+                .selectAll("path")
+                .data(countries)
+                .join("path")
+                .attr("fill", "#ddd")
+                .attr("stroke", "#999")
+                .attr("d", path);
+
+            mapSvg.selectAll("circle")
+                .data(data)
+                .join("circle")
+                .attr("cx", d => projection([d.lon, d.lat])[0])
+                .attr("cy", d => projection([d.lon, d.lat])[1])
+                .attr("r", d => radius(d.earnings))
+                .attr("fill", "#494c6f")
+                .attr("fill-opacity", 0.6)
+                .attr("stroke", "#333")
+                .on("mouseover", (event, d) => {
+                    tooltip.transition().duration(200).style("opacity", 1);
+                    tooltip.html(`
+                            <strong>${d.region}</strong><br/>
+                            Earnings: $${d.earnings.toLocaleString()}<br/>
+                            Jobs: ${d.jobs.toLocaleString()}<br/>
+                            Avg Rating: ${d.rating.toFixed(2)}
+                        `)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 30) + "px");
+
+                    updateBarChart(d, event.pageX, event.pageY);
+                })
+                .on("mousemove", (event, d) => {
+                    tooltip.style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 60) + "px");
+                    barTooltip.style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY + 30) + "px");
+                })
+                .on("mouseout", () => {
+                    tooltip.transition().duration(300).style("opacity", 0);
+                    barTooltip.transition().duration(300).style("opacity", 0);
+                });
+        });
+
+        function updateBarChart(regionData, x, y) {
+            const barData = [
+                { level: "Beginner", value: regionData.beginner },
+                { level: "Intermediate", value: regionData.intermediate },
+                { level: "Expert", value: regionData.expert }
+            ];
+
+            const width = 300;
+            const height = 200;
+            const margin = { top: 20, right: 10, bottom: 20, left: 30 };
+            const chartWidth = width - margin.left - margin.right;
+            const chartHeight = height - margin.top - margin.bottom;
+
+            barTooltip.html(""); // Clear old chart
+
+            barTooltip.style("opacity", 1)
+                .style("left", (x + 10) + "px")
+                .style("top", (y + 30) + "px");
+
+            const svg = barTooltip.append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            const xScale = d3.scaleBand()
+                .domain(barData.map(d => d.level))
+                .range([0, chartWidth])
+                .padding(0.2);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(barData, d => d.value)])
+                .range([chartHeight, 0]);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // Bars with vertical animation (grow upward)
+            g.selectAll(".bar")
+                .data(barData)
+                .join("rect")
+                .attr("class", "bar")
+                .attr("x", d => xScale(d.level))
+                .attr("width", xScale.bandwidth())
+                .attr("y", chartHeight)          // Start at bottom
+                .attr("height", 0)          // Start height = 0
+                .attr("fill", "#494c6f")
+                .transition()               // Animate to final height
+                .duration(500)
+                .ease(d3.easeLinear)
+                .attr("y", d => yScale(d.value))
+                .attr("height", d => chartHeight - yScale(d.value));
+
+            // X Axis
+            g.append("g")
+                .attr("transform", `translate(0,${chartHeight})`)
+                .call(d3.axisBottom(xScale).tickSize(0).tickPadding(6))
+                .selectAll("text")
+                .style("font-size", "8px");
+
+            // Y Axis
+            g.append("g")
+                .call(d3.axisLeft(yScale).ticks(5).tickFormat(d3.format("~s"))) // <-- round numbers nicely
+                .selectAll("text")
+                .style("font-size", "8px");
+
+
+            // Optional value labels
+            g.selectAll(".bar-label")
+                .data(barData)
+                .join("text")
+                .attr("class", "bar-label")
+                .attr("x", d => xScale(d.level) + xScale.bandwidth() / 2)
+                .attr("y", d => yScale(d.value) - 5)
+                .attr("text-anchor", "middle")
+                .style("font-size", "12px")
+                .style("opacity", 0)
+                .text(d => d.value)
+                .transition()
+                .delay(500)
+                .duration(300)
+                .style("opacity", 1);
+        }
+    </script>
+
+    <script>
+        // box plot
+        d3.csv('freelancer_earnings_bd.csv').then(function (data) {
+            data.forEach(d => {
+                d.Experience_Level_Num = d.Experience_Level === 'Beginner' ? 1 :
+                    d.Experience_Level === 'Intermediate' ? 2 : 3;
+                d.Earnings_USD = +d.Earnings_USD;
+            });
+
+            const margin = { top: 50, right: 30, bottom: 100, left: 60 },
+                width = 1000 - margin.left - margin.right,
+                height = 600 - margin.top - margin.bottom;
+
+			const svg = d3.select("#box-plot")
+			  .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+			  .attr("preserveAspectRatio", "xMidYMid meet")
+			  .append("g")
+			  .attr("transform", `translate(${margin.left},${margin.top})`);
+
+
+
+            const tooltip = d3.select("body")
+                .append("div")
+                .style("position", "absolute")
+                .style("background", "#f9f9f9")
+                .style("border", "1px solid #d3d3d3")
+                .style("padding", "8px")
+                .style("border-radius", "4px")
+                .style("visibility", "hidden")
+                .style("font-size", "13px");
+
+            const groupedData = d3.group(data, d => d.Platform, d => d.Experience_Level);
+
+            const x = d3.scaleBand()
+                .domain(Array.from(groupedData.keys()))
+                .range([0, width])
+                .padding(0.5);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.Earnings_USD)])
+                .nice()
+                .range([height, 0]);
+
+            //custom colors
+            const experienceLevels = ['Beginner', 'Intermediate', 'Expert'];
+            const customColors = ['#f3952b', '#f35366', '#8487ae'];
+            const color = d3.scaleOrdinal()
+                .domain(experienceLevels)
+                .range(customColors);
+			
+			const mobile = window.innerWidth < 768;
+				svg.selectAll("text")
+					.style("font-size", mobile ? "12px" : "14px");
+
+			
+            svg.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .attr("x", 0)
+            .attr("dy", "2em")
+            .style("font-size", mobile ? "12px" : "16px")
+            .style("text-anchor", "middle");
+
+            // Y Axis
+			svg.append("g")
+				.call(d3.axisLeft(y))
+				.selectAll("text")
+				.style("font-size", mobile ? "11px" : "13px");
+
+            svg.append("text")
+				.attr("x", width / 2)
+				.attr("y", -20)
+				.attr("text-anchor", "middle")
+				.style("font-size", mobile ? "20px" : "30px")
+				.text("Earnings per Platform and Experience Level");
+
+            Array.from(groupedData.entries()).forEach(([platform, levels]) => {
+                const platformX = x(platform) + x.bandwidth() / 2;
+
+                ['Beginner', 'Intermediate', 'Expert'].forEach(level => {
+                    const levelData = levels.get(level) || [];
+                    if (levelData.length > 0) {
+                        const earnings = levelData.map(d => d.Earnings_USD);
+                        const q1 = d3.quantile(earnings, 0.25);
+                        const median = d3.quantile(earnings, 0.5);
+                        const q3 = d3.quantile(earnings, 0.75);
+                        const iqr = q3 - q1;
+                        const min = Math.max(d3.min(earnings), q1 - 1.5 * iqr);
+                        const max = Math.min(d3.max(earnings), q3 + 1.5 * iqr);
+
+                        const levelX = platformX + (level === 'Beginner' ? -25 : level === 'Intermediate' ? 0 : 25); // Adjusted spacing
+
+
+                        svg.append("rect")
+                            .attr("x", levelX - 10)
+                            .attr("y", y(q3))
+                            .attr("width", 20)
+                            .attr("height", y(q1) - y(q3))
+                            .attr("fill", color(level))
+                            .on("mouseover", (event) => {
+                                tooltip.style("visibility", "visible")
+                                    .text(`Median: $${median.toFixed(2)}`);
+                            })
+                            .on("mousemove", (event) => {
+                                tooltip.style("top", `${event.pageY + 10}px`)
+                                    .style("left", `${event.pageX + 10}px`);
+                            })
+                            .on("mouseout", () => {
+                                tooltip.style("visibility", "hidden");
+                            });
+
+
+                        svg.append("line")
+                            .attr("x1", levelX)
+                            .attr("x2", levelX)
+                            .attr("y1", y(min))
+                            .attr("y2", y(max))
+                            .attr("stroke", "black");
+
+
+
+                        svg.append("line")
+                            .attr("x1", levelX - 5)
+                            .attr("x2", levelX + 5)
+                            .attr("y1", y(min))
+                            .attr("y2", y(min))
+                            .attr("stroke", "black");
+
+                        svg.append("line")
+                            .attr("x1", levelX - 5)
+                            .attr("x2", levelX + 5)
+                            .attr("y1", y(max))
+                            .attr("y2", y(max))
+                            .attr("stroke", "black");
+
+                        svg.append("line")
+                            .attr("x1", levelX - 5)
+                            .attr("x2", levelX + 5)
+                            .attr("y1", y(median))
+                            .attr("y2", y(median))
+                            .attr("stroke", "black")
+                            .attr("stroke-width", 2);
+                    }
+                });
+            });
+
+            const legend = svg.append("g")
+                .attr("transform", `translate(${width - 50}, 0)`);
+
+            ['Beginner', 'Intermediate', 'Expert'].forEach((level, i) => {
+                legend.append("rect")
+                    .attr("x", 0)
+                    .attr("y", i * 20)
+                    .attr("width", 10)
+                    .attr("height", 10)
+                    .attr("fill", color(level));
+
+                legend.append("text")
+                    .attr("x", 15)
+                    .attr("y", i * 20 + 10)
+                    .text(level)
+                    .style("font-size", "12px")
+                    .attr("alignment-baseline", "middle");
+            });
+        });
+    </script>
+    <script>
+        // bar charts
+        d3.csv('freelancer_earnings_bd.csv').then(function (data) {
+            const groupedData = d3.rollup(
+                data,
+                v => v.length,
+                d => d.Platform,
+                d => d.Job_Category,
+                d => d.Project_Type
+            );
+            const platforms = Array.from(groupedData.keys());
+            const allCategories = Array.from(new Set(data.map(d => d.Job_Category))).sort();
+            const platformData = platforms.map(platform => ({
+                platform,
+                categories: Array.from(groupedData.get(platform) || []).map(([category, projectTypes]) => ({
+                    category,
+                    fixed: projectTypes.get("Fixed") || 0,
+                    hourly: projectTypes.get("Hourly") || 0,
+                    job_completed: (projectTypes.get("Fixed") || 0) + (projectTypes.get("Hourly") || 0) // Total jobs
+                }))
+            }));
+
+            const width = 180, height = 220;
+            const margin = { top: 20, right: 20, bottom: 70, left: 40 };
+            const chartWidth = width - margin.left - margin.right;
+            const chartHeight = height - margin.top - margin.bottom;
+
+            const projectCats = ['Art Development', 'Content Writing', 'Customer Support','Data Entry','Digital Marketing','Graphic Design','SEO','Web Development'];
+            const customColors = ['#ffae03', '#f3952b', '#f37449', '#f35366', '#b56786', '#967196', '#777AA6', '#524F6A'];
+            const color = d3.scaleOrdinal()
+                .domain(projectCats)
+                .range(customColors);
+
+            const tooltip = d3.select("body")
+                .append("div")
+                .style("position", "absolute")
+                .style("background", "#f9f9f9")
+                .style("border", "1px solid #d3d3d3")
+                .style("padding", "8px")
+                .style("border-radius", "4px")
+                .style("visibility", "hidden")
+                .style("font-size", "13px");
+
+            const dropdown = d3.select("#job-category-dropdown-container")
+                .append("select")
+                .style("margin-bottom", "20px")
+                .style("font-size", "16px")
+                .style("padding", "5px 10px")
+                .style("display", "block")
+                .style("margin-left", "auto")
+                .style("margin-right", "auto")
+                .on("change", updateCharts);
+
+            dropdown.selectAll("option")
+                .data(["Fixed", "Hourly"])
+                .join("option")
+                .attr("value", d => d)
+                .text(d => d);
+
+            const svgContainers = platformData.map(platformObj => {
+                const svg = d3.select("#job-category-chart")
+                    .append("div")
+                    .style("display", "inline-block")
+                    .style("margin", "10px")
+                    .append("svg")
+                    .attr("width", width)
+                    .attr("height", height);
+
+                const x = d3.scaleBand()
+                    .domain(allCategories)
+                    .range([0, chartWidth])
+                    .padding(0.2);
+
+                const y = d3.scaleLinear()
+                    .domain([0, d3.max(platformObj.categories, d => d.fixed)])
+                    .range([chartHeight, 0]);
+
+                const g = svg.append("g")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+                g.append("g")
+                    .attr("transform", `translate(0, ${chartHeight})`)
+                    .call(d3.axisBottom(x))
+                    .selectAll("text")
+                    .attr("transform", "rotate(-45)")
+                    .style("text-anchor", "end");
+
+                g.append("g")
+                    .call(d3.axisLeft(y).ticks(5).tickFormat(d3.format("~s")));
+
+                const fullCategoryData = allCategories.map(category => {
+                    const match = platformObj.categories.find(d => d.category === category);
+                    return match || { category, fixed: 0, hourly: 0, job_completed: 0 };
+                });
+
+                const bars = g.selectAll(".bar")
+                    .data(fullCategoryData)
+                    .join("rect")
+                    .attr("class", "bar")
+                    .attr("x", d => x(d.category))
+                    .attr("width", x.bandwidth())
+                    .attr("y", d => y(d.fixed))
+                    .attr("height", d => chartHeight - y(d.fixed))
+                    .attr("fill", d => color(d.category))
+                    .on("mouseover", (event, d) => {
+                        tooltip.style("visibility", "visible")
+                            .html(`Category: ${d.category}<br>Total Jobs: ${d.job_completed}`);
+                    })
+                    .on("mousemove", (event) => {
+                        tooltip.style("top", `${event.pageY + 5}px`)
+                            .style("left", `${event.pageX + 10}px`);
+                    })
+                    .on("mouseout", () => {
+                        tooltip.style("visibility", "hidden");
+                    });
+
+                svg.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", margin.top / 2)
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "14px")
+                    .text(platformObj.platform);
+
+                return { svg, x, y, bars, platformObj };
+            });
+
+            function updateCharts() {
+                const selectedType = dropdown.property("value").toLowerCase();
+
+                svgContainers.forEach(({ y, bars, platformObj }) => {
+                    y.domain([0, d3.max(platformObj.categories, d => d[selectedType])]);
+
+                    const fullCategoryData = allCategories.map(category => {
+                        const match = platformObj.categories.find(d => d.category === category);
+                        return match || { category, fixed: 0, hourly: 0, job_completed: 0 };
+                    });
+
+                    bars.data(fullCategoryData)
+                        .transition()
+                        .duration(500)
+                        .attr("y", d => y(d[selectedType]))
+                        .attr("height", d => chartHeight - y(d[selectedType]))
+                        .attr("fill", d => color(d.category));
+                });
+            }
+
+            updateCharts();
+        });
+    </script>
+    <script>
+        async function drawHeatmap() {
+            // Load and clean the data
+            const rawData = await d3.csv("freelancer_earnings_bd.csv", d => ({
+                platform: d.Platform,
+                level: +({ Beginner: 1, Intermediate: 2, Expert: 3 }[d.Experience_Level?.trim()] || 0),
+                earnings: +d.Earnings_USD
+            }));
+            const data = rawData.filter(d => d.level > 0 && d.earnings > 0);
+
+            // Group and average earnings by platform and level
+            const groupedData = Array.from(
+                d3.rollup(
+                    data,
+                    v => d3.mean(v, d => d.earnings),
+                    d => d.platform,
+                    d => d.level
+                ),
+                ([platform, levelsMap]) =>
+                    Array.from(levelsMap, ([level, earnings]) => ({
+                        platform,
+                        level,
+                        earnings
+                    }))
+            ).flat();
+
+            // Setup
+            const margin = { top: 80, right: 5, bottom: 50, left: 90 };
+            const width = 900;
+            const height = 514;
+             const svg = d3.select("#heatmap")
+  .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+  .attr("preserveAspectRatio", "xMidYMid meet")
+  .style("max-width", "900px")
+  .style("max-height", "514px")
+  .style("width", "100%")
+  .style("height", "auto");
+
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            const platforms = [...new Set(groupedData.map(d => d.platform))];
+            const levels = [1, 2, 3];
+            const levelNames = { 1: "Beginner", 2: "Intermediate", 3: "Expert" };
+
+            const x = d3.scaleBand().domain(levels).range([0, width]).padding(0.05);
+            const y = d3.scaleBand().domain(platforms).range([0, height]).padding(0.05);
+
+            const color = d3.scaleSequential()
+                .domain(d3.extent(groupedData, d => d.earnings))  // [min, max]
+                .interpolator(d3.interpolateRgb("#cecfdf", "#30324a"));
+
+			const mobile = window.innerWidth < 768;
+
+            g.append("g")
+			.call(d3.axisTop(x).tickFormat(d => levelNames[d]))
+			.selectAll("text")
+			.style("font-size", mobile ? "12px" : "13px");
+
+			  g.append("g")
+				.call(d3.axisLeft(y))
+				.selectAll("text")
+				.style("font-size", mobile ? "12px" : "13px");
+
+            const tooltip = d3.select("#tooltip");
+
+            g.selectAll("rect")
+                .data(groupedData)
+                .join("rect")
+                .attr("x", d => x(d.level))
+                .attr("y", d => y(d.platform))
+                .attr("width", x.bandwidth())
+                .attr("height", y.bandwidth())
+                .attr("fill", d => color(d.earnings))
+                .on("mouseover", (event, d) => {
+                    tooltip
+                        .style("visibility", "visible")
+                        .style("top", `${event.pageY + 5}px`)
+                        .style("left", `${event.pageX + 10}px`)
+                        .html(`${d.platform}<br>${levelNames[d.level]}<br>Avg Earnings: $${d.earnings.toFixed(2)}`);
+                })
+                .on("mouseout", () => tooltip.style("visibility", "hidden"));
+
+            // Color legend
+            const legendWidth = 200;
+            const legendHeight = 15;
+            const defs = svg.append("defs");
+            const linearGradient = defs.append("linearGradient")
+                .attr("id", "legend-gradient")
+                .attr("x1", "0%")
+                .attr("y1", "0%")
+                .attr("x2", "100%")
+                .attr("y2", "0%");
+
+            const legendStops = d3.range(0, 1.01, 0.1);
+            legendStops.forEach(t => {
+                linearGradient.append("stop")
+                    .attr("offset", `${t * 100}%`)
+                    .attr("stop-color", color(color.domain()[0] + t * (color.domain()[1] - color.domain()[0])));
+
+            });
+
+            const legend = svg.append("g")
+                .attr("transform", `translate(${(width + margin.left + margin.right - legendWidth) / 2}, 30)`);
+
+            legend.append("rect")
+                .attr("width", legendWidth)
+                .attr("height", legendHeight)
+                .style("fill", "url(#legend-gradient)");
+
+            const legendScale = d3.scaleLinear()
+                .domain(color.domain())
+                .range([0, legendWidth]);
+
+            legend.append("g")
+    .attr("transform", `translate(0, ${legendHeight})`)
+   .call(d3.axisBottom(legendScale).ticks(5).tickFormat(d3.format("$,.0f")))
+    .selectAll("text")
+    .style("font-size", mobile ? "10px" : "12px");        }
+
+        drawHeatmap();
+    </script>
+</body>
+</html>
